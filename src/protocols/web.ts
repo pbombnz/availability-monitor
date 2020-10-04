@@ -130,7 +130,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static up(data: any, duration: number, traceroute?: any): MonitorResponse {
     return {
       isUp: true,
-      responseTime: duration,
+      duration: duration,
       event: 'up',
       data,
       traceroute
@@ -140,7 +140,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static down(data: any, duration: number, reason: string, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'down',
       data,
       error: new Error(reason),
@@ -151,7 +151,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static timeout(error: Error, duration: number = 0, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'timeout',
       error,
       traceroute
@@ -161,7 +161,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static error(error: Error | string, duration: number = 0, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'error',
       data: (typeof error !== 'string' && error instanceof GotRequestError) ? error.response : undefined,
       error: typeof error === 'string' ? new Error(error) : error,

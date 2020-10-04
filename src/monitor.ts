@@ -188,7 +188,7 @@ export default class Monitor extends EventEmitter {
           const response: MonitorResponse = {
             event: 'error',
             isUp: false,
-            responseTime: 0,
+            duration: 0,
             error: err
           }
 

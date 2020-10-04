@@ -12,7 +12,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
     let protocolHandlerResponse: MonitorResponse = {
       isUp: false,
       event: 'down',
-      responseTime: 0
+      duration: 0
     }
     let socket: Socket = new Socket();
     socket.setTimeout(options.options?.timeout ?? 15000)
@@ -25,7 +25,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
   
       protocolHandlerResponse.isUp = true
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.data = socket
       protocolHandlerResponse.event = 'up'
     })
@@ -37,7 +37,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
 
       protocolHandlerResponse.isUp = false
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.event = 'error'
       protocolHandlerResponse.error = err
     })
@@ -49,7 +49,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
 
       protocolHandlerResponse.isUp = false
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.event = 'timeout'
       protocolHandlerResponse.error = new Error('connection timeout')
     })
