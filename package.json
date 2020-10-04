@@ -1,6 +1,6 @@
 {
   "name": "availability-monitor",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A library to monitor the availablity of web services. Supports various protocols, including HTTP, HTTPS, TCP.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/pbombnz/node-monitor.git"
+    "url": "https://github.com/pbombnz/availability-monitor.git"
   },
   "keywords": [
     "monitor",
