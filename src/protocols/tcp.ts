@@ -2,9 +2,8 @@
 
 import { Socket } from 'net'
 import * as utils from '../utils'
-import { MonitorError, MonitorResponse, MonitorHandler } from '.';
-import { TcpProtocolOptions } from '../monitor';
-import { error } from 'console';
+import { MonitorError, MonitorResponse, MonitorHandler } from '.'
+import { TcpProtocolOptions } from '../monitor'
 
 export default class TcpProtocolHandler implements MonitorHandler {
   async ping(options: TcpProtocolOptions): Promise<MonitorResponse> {
@@ -55,10 +54,8 @@ export default class TcpProtocolHandler implements MonitorHandler {
     })
 
     while(!reaction) { 
-      console.log('Nope!')
-      await utils.sleep(200)
+      await utils.sleep(100)
     }
-    console.log('Yeah!')
     
     if (protocolHandlerResponse.error) {
       throw new MonitorError(protocolHandlerResponse)
