@@ -2,9 +2,8 @@
 
 import { Socket } from 'net'
 import * as utils from '../utils'
-import { MonitorError, MonitorResponse, MonitorHandler } from '.';
-import { TcpProtocolOptions } from '../monitor';
-import { error } from 'console';
+import { MonitorError, MonitorResponse, MonitorHandler } from '.'
+import { TcpProtocolOptions } from '../monitor'
 
 export default class TcpProtocolHandler implements MonitorHandler {
   async ping(options: TcpProtocolOptions): Promise<MonitorResponse> {
@@ -12,7 +11,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
     let protocolHandlerResponse: MonitorResponse = {
       isUp: false,
       event: 'down',
-      responseTime: 0
+      duration: 0
     }
     let socket: Socket = new Socket();
     socket.setTimeout(options.options?.timeout ?? 15000)
@@ -25,7 +24,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
   
       protocolHandlerResponse.isUp = true
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.data = socket
       protocolHandlerResponse.event = 'up'
     })
@@ -37,7 +36,7 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
 
       protocolHandlerResponse.isUp = false
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.event = 'error'
       protocolHandlerResponse.error = err
     })
@@ -49,16 +48,14 @@ export default class TcpProtocolHandler implements MonitorHandler {
       socket.destroy()
 
       protocolHandlerResponse.isUp = false
-      protocolHandlerResponse.responseTime = responseTime
+      protocolHandlerResponse.duration = responseTime
       protocolHandlerResponse.event = 'timeout'
       protocolHandlerResponse.error = new Error('connection timeout')
     })
 
     while(!reaction) { 
-      console.log('Nope!')
-      await utils.sleep(200)
+      await utils.sleep(100)
     }
-    console.log('Yeah!')
     
     if (protocolHandlerResponse.error) {
       throw new MonitorError(protocolHandlerResponse)

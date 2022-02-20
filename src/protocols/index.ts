@@ -2,7 +2,7 @@ import { SupportedProtocolOptions } from "../monitor"
 
 export interface MonitorResponse {
     isUp: boolean
-    responseTime: number
+    duration: number
     event: 'up' | 'down' | 'timeout' | 'error'
     error?: Error
     data?: any

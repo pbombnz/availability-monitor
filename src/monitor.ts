@@ -27,24 +27,9 @@ export type SupportedProtocolOptions = WebProtocolOptions | TcpProtocolOptions
 
 
 export interface MonitorOptions {
-    // General
-    id: string | number
-    readonly createdAt: number
-    title: string
-    // Options
     protocol: SupportedProtocol
     protocolOptions: SupportedProtocolOptions
     interval: number
-}
-
-export interface MonitorState {
-  active?: boolean
-  isUp?: boolean
-  paused?: boolean
-  totalRequests?: number
-  totalDownTimes?: number
-  lastDownTime?: any | null
-  lastRequest?: any | null
 }
 
 
@@ -53,95 +38,56 @@ const ProtocolHandlers: Record<SupportedProtocol, MonitorHandler> = {
   'tcp': new TcpProtocolHander(),
 }
 
+export type MonitorState = 'running' | 'waiting' | 'stopped'
+
 
 
 export default class Monitor extends EventEmitter {
-
-  // General
-  readonly id: string | number
-  readonly createdAt: number
-  readonly title: string
   // Options
   readonly protocol: SupportedProtocol
   readonly protocolOptions: SupportedProtocolOptions
   readonly interval: number
-  // State
-  private _intervalHandler: NodeJS.Timeout | null
-  private _active: boolean
-  private _isUp: boolean
-  private _totalRequests: number
-  private _totalDownTimes: number
-  private _lastDownTime: any | null
-  private _lastRequest: any | null
 
-  constructor(opts: MonitorOptions, state?: MonitorState) {
+  private _intervalHandler: NodeJS.Timeout | null
+  private _intervalHandlerTicking: boolean
+
+  constructor(opts: MonitorOptions, runImmediately: boolean = true) {
     super()
-    
-    // General
-    this.id = opts.id
-    this.createdAt = Date.now()
-    this.title = opts.title
-    // Options
+
     this.protocol = opts.protocol
     this.protocolOptions = opts.protocolOptions
     this.interval = opts.interval ?? 5
   
-    // State
     this._intervalHandler = null
-    this._active = state?.active ?? true
-    this._isUp = state?.isUp ?? false
-    this._totalRequests = state?.totalRequests ?? 0
-    this._totalDownTimes = state?.totalDownTimes ?? 0
-    this._lastDownTime = null
-    this._lastRequest = null
+    this._intervalHandlerTicking = false
 
-    if (!this._active) {
-      console.log(`${this.title} (ID: ${this.id}) monitoring is initialised by not active.`)
-    } else {
-      this.start(true)
-    }
+    this.start(runImmediately)
   }
 
-  public getState() {
-    return {
-      active: this._active,
-      isUp: this._isUp,
-      totalRequests: this._totalRequests,
-      totalDownTimes: this._totalDownTimes,
-      lastDownTime: this._lastDownTime,
-      lastRequest: this._lastRequest
-    }
+  
+  public get isTicking() : boolean {
+    return this._intervalHandlerTicking
   }
 
-  private resetState(clearStats: boolean = false): void {
+  private resetState(): void {
     if(this._intervalHandler) {
       clearInterval(this._intervalHandler)
     }
+    
     this._intervalHandler = null
-    this._active = false
-    this._isUp = false
-
-    if (clearStats) {
-      this._totalRequests = 0
-      this._totalDownTimes = 0
-      this._lastDownTime = null
-      this._lastRequest = null
-    }
+    this._intervalHandlerTicking = false
   }
 
-  public start(force: boolean = false) {
-    if(this._active && !force) {
-      console.log(`${this.title} already started.`)
+  public start(force: boolean = false): void {
+    if(this._intervalHandlerTicking  && !force) {
       return
     }
-    this._active = true
+    this._intervalHandlerTicking = true
 
     const ONE_MINUTE = (60 * 1000)
     const INTERVAL = (this.interval ?? 0) * ONE_MINUTE
 
-
     // Ping on start
-    console.log(`${this.title} started`)
     this.emit('start', this)
     this.ping()
 
@@ -149,46 +95,34 @@ export default class Monitor extends EventEmitter {
     this._intervalHandler = setInterval(() => { this.ping() }, INTERVAL)
   }
 
-  public stop(clearStats: boolean = false): void {
-    this.resetState(clearStats)
-    console.log(`${this.title} stopped`)
+  public stop(): void {
+    this.resetState()
     this.emit('stop', this)
   }
 
-  public restart(clearStats: boolean = false): void {
+  public restart(): void {
     this.emit('restart', this)
-    this.stop(clearStats)
+    this.stop()
     this.start()
   }
 
   private ping() {
     process.nextTick(async () => {
-      this._totalRequests += 1
-      this._lastRequest = Date.now()
-
       try {
         const response: MonitorResponse = await ProtocolHandlers[this.protocol].ping(this.protocolOptions)
-        this._isUp = response.isUp
         this.emit(response.event, this, response)
-      } catch (err) {
-        this._lastDownTime = Date.now()
-        this._totalDownTimes += 1
-
+      } catch (err: any) {
         if (err instanceof MonitorError) {
-          this._isUp = err.response.isUp
           this.emit(err.response.event, this, err.response)
         } else {
           // Unexpected errors raised in MonitorHandler. Theoretically, should never get here!
           
           // Wrap the error in a MonitorResponse object, so event listeners can handle the error
           // similarly to how expected errors are handled.
-
-          this._isUp = false
-
           const response: MonitorResponse = {
             event: 'error',
             isUp: false,
-            responseTime: 0,
+            duration: 0,
             error: err
           }
 

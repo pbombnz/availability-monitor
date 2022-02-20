@@ -8,6 +8,7 @@ import { MonitorHandler, MonitorError, MonitorResponse } from '.'
 import { WebProtocolOptions } from '../monitor'
 import { Options } from 'got/dist/source'
 
+
 type StrictOptions = Omit<Options, 'isStream' | 'responseType' | 'resolveBodyOnly' | '_cannotHaveBody' | '_progressCallbacks' | 'options' | 'requestInitialized' >
 
 export default class WebProtocolHandler implements MonitorHandler { 
@@ -16,13 +17,13 @@ export default class WebProtocolHandler implements MonitorHandler {
     
     if(options.engine === 'got') { 
       return await this.pingViaGot(options)
-    } else /*if(options.engine === 'puppeteer')*/ {
+    } else {
       return await this.pingViaPuppeteer(options)
     }
   }
 
   async pingViaPuppeteer(options: WebProtocolOptions): Promise<MonitorResponse> {
-      const browser = await puppeteer.launch({ headless: true })
+    const browser = await puppeteer.launch({ headless: true })
     const page = await browser.newPage()
     let har = new PuppeteerHar(page)
     await har.start()
@@ -56,17 +57,20 @@ export default class WebProtocolHandler implements MonitorHandler {
       }
 
     } catch (error) {
-      const metrics = await page.metrics()
-      let harObj
-      try {
-        harObj = await har.stop()
-      } catch (error) {}
+      if (error instanceof Error) {
+        const metrics = await page.metrics()
+        let harObj
+        try {
+          harObj = await har.stop()
+        } catch (error) {}
 
-      if (error instanceof puppeteer.errors.TimeoutError) {
-        throw new MonitorError(WebProtocolHandler.timeout(error, metrics.TaskDuration, harObj))
-      } else{
-        throw new MonitorError(WebProtocolHandler.error(error, metrics.TaskDuration, harObj))
+        if (error instanceof puppeteer.errors.TimeoutError) {
+          throw new MonitorError(WebProtocolHandler.timeout(error, metrics.TaskDuration, harObj))
+        } else{
+          throw new MonitorError(WebProtocolHandler.error(error, metrics.TaskDuration, harObj))
+        }
       }
+      return WebProtocolHandler.error('', 0, null)
     } finally {
       await browser.close()
     }
@@ -78,37 +82,39 @@ export default class WebProtocolHandler implements MonitorHandler {
     httpOptions.throwHttpErrors = false
     
     let res: GotResponse<string> | undefined
-    let duration: number
+    let duration: number = -1
 
     try {
       res = await got(url, httpOptions)
       duration = res.timings.phases.total as number
-    } catch(err) {
-      //console.error(err)
-      /*if(err instanceof CacheError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof ReadError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof ParseError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof UploadError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof HTTPError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof MaxRedirectsError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof UnsupportedProtocolError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else */if(err instanceof GotTimeoutError) {
-        throw new MonitorError(WebProtocolHandler.timeout(err))
-      }/* else if(err instanceof CancelError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } */else {
-        throw new MonitorError(WebProtocolHandler.error(err))
+    } catch(error) {
+      if (error instanceof Error) {
+        //console.error(err)
+        /*if(err instanceof CacheError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof ReadError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof ParseError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof UploadError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof HTTPError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof MaxRedirectsError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof UnsupportedProtocolError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else */if(error instanceof GotTimeoutError) {
+          throw new MonitorError(WebProtocolHandler.timeout(error))
+        }/* else if(err instanceof CancelError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } */else {
+          throw new MonitorError(WebProtocolHandler.error(error))
+        }
       }
     }
 
-    if (options.expect) {
+    if (res && options.expect) {
       // Check if actual status code matches the expected code.
       if (options.expect.statusCode && res.statusCode !== options.expect.statusCode) {
         throw new MonitorError(WebProtocolHandler.down(res, duration, 'Expected status code did not match the actual status code recieved.'))
@@ -119,7 +125,7 @@ export default class WebProtocolHandler implements MonitorHandler {
         throw new MonitorError(WebProtocolHandler.down(res, duration, 'Expected content was not found in response body.'))
       }
       return WebProtocolHandler.up(res, duration)
-    } else if ((res.statusCode >= 200 && res.statusCode <= 299) || res.statusCode == 304) {
+    } else if (res && ((res.statusCode >= 200 && res.statusCode <= 299) || res.statusCode == 304)) {
       return WebProtocolHandler.up(res, duration)
     }
     else {
@@ -130,7 +136,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static up(data: any, duration: number, traceroute?: any): MonitorResponse {
     return {
       isUp: true,
-      responseTime: duration,
+      duration: duration,
       event: 'up',
       data,
       traceroute
@@ -140,7 +146,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static down(data: any, duration: number, reason: string, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'down',
       data,
       error: new Error(reason),
@@ -151,7 +157,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static timeout(error: Error, duration: number = 0, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'timeout',
       error,
       traceroute
@@ -161,7 +167,7 @@ export default class WebProtocolHandler implements MonitorHandler {
   static error(error: Error | string, duration: number = 0, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
-      responseTime: duration,
+      duration: duration,
       event: 'error',
       data: (typeof error !== 'string' && error instanceof GotRequestError) ? error.response : undefined,
       error: typeof error === 'string' ? new Error(error) : error,
