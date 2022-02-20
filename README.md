@@ -29,9 +29,6 @@ npm install availability-monitor
 const Monitor = require('availability-monitor')
 
 const bbcNewsMonitor = new Monitor({
-    id: 1,
-    title: 'BBC News',
-    createdAt: Date.now(),
     protocol: 'web',
     protocolOptions: {
         url: 'https://bbcnews.com',
@@ -72,27 +69,6 @@ _Example:_
 // Using String (UUID in our case)
 '954f330d-9376-43d4-830f-3b4d1f615ef'
 ```
-
-#### createdAt
-_Type:_ `number`
-
-_Default:_ `Date.now()`
-
-_Description:_
-
-The date this Monitor was created.
-
-#### title
-_Type:_ `string`
-
-_Description:_
-
-A human-readable identifier for this Monitor instance.
-
-_Example:_
-
-If we were checking availability of `https://bbcnews.com`, our name could be `BBC News`
-
 
 #### protocol
 _Type:_ `SupportedProtocol`
@@ -269,53 +245,11 @@ _Description:_
 When the engine used is `puppeteer`, this variable holds a HTTP Archive format (HAR) that can be used to analyse the browser's network activity. To grahpically view a HAR, use (Google's HAR Analyzer)[https://toolbox.googleapps.com/apps/har_analyzer/].
 
 
-### Monitor.getState() / State object
+### monitor.isTicking
 
-Contains some statistics and the state of this monitoring object.
-
-#### active
+#### isTicking
 _Type:_ `boolean`
 
 _Description:_
 
-Whether monitoring is actively polling or not.
-
-#### isUp
-_Type:_ `boolean`
-
-_Description:_
-
-A high-level approach to clarify if a web service is running or not.
-
-
-#### totalRequests
-_Type:_ `number`
-
-_Description:_
-
-Number of total requests made.
-
-#### totalDownTimes
-_Type:_ `number`
-
-_Description:_
-
-Number of total number of downtimes.
-
-#### lastDownTime
-_Type:_ `number`
-
-_Default:_ `Date.now()`
-
-_Description:_
-
-Time of last downtime.
-
-#### lastDownTime
-_Type:_ `number`
-
-_Default:_ `Date.now()`
-
-_Description:_
-
-Time of last request.
+Whether monitoring has an underlying interval timer running or not.
