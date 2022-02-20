@@ -8,6 +8,7 @@ import { MonitorHandler, MonitorError, MonitorResponse } from '.'
 import { WebProtocolOptions } from '../monitor'
 import { Options } from 'got/dist/source'
 
+
 type StrictOptions = Omit<Options, 'isStream' | 'responseType' | 'resolveBodyOnly' | '_cannotHaveBody' | '_progressCallbacks' | 'options' | 'requestInitialized' >
 
 export default class WebProtocolHandler implements MonitorHandler { 
@@ -16,13 +17,13 @@ export default class WebProtocolHandler implements MonitorHandler {
     
     if(options.engine === 'got') { 
       return await this.pingViaGot(options)
-    } else /*if(options.engine === 'puppeteer')*/ {
+    } else {
       return await this.pingViaPuppeteer(options)
     }
   }
 
   async pingViaPuppeteer(options: WebProtocolOptions): Promise<MonitorResponse> {
-      const browser = await puppeteer.launch({ headless: true })
+    const browser = await puppeteer.launch({ headless: true })
     const page = await browser.newPage()
     let har = new PuppeteerHar(page)
     await har.start()

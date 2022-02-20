@@ -68,9 +68,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test 1',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'got',
@@ -82,22 +79,13 @@ describe('Monitor', function () {
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
+      expect(isTicking).to.equal(true)
       expect(res.statusCode).to.equal(200)
       // check state props
-      expect(monitor.id).to.equal(1)
-      expect(monitor.title).to.be.a('string')
-      expect(monitor.createdAt).to.be.gt(0)
-      expect(state.active).to.be.true
-      expect(state.isUp).to.be.true
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://testing.com/must-pass')
       expect(monitor.interval).to.equal(500)
-      expect(state.totalRequests).to.equal(1)
-      expect(state.totalDownTimes).to.equal(0)
-      expect(state.lastRequest).to.be.gt(0)
-      expect(state.lastDownTime).to.be.a('null')
-
       ping.stop()
       done()
     })
@@ -112,9 +100,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 2,
-      title: 'Test 2',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'got',
@@ -131,20 +116,13 @@ describe('Monitor', function () {
 
     ping.on('down', (monitor: Monitor, response: MonitorResponse) => {
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
       
+      expect(isTicking).to.equal(true)
       expect(res.statusCode).to.equal(500)
       // check state props
-      expect(ping.id).to.equal(2)
-      expect(ping.createdAt).to.be.gt(0)
-      expect(state.active).to.be.true
-      expect(state.isUp).to.be.false
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://testing.com/must-fail')
       expect(ping.interval).to.equal(500)
-      expect(state.totalRequests).to.equal(1)
-      expect(state.totalDownTimes).to.equal(1)
-      expect(state.lastRequest).to.be.gt(0)
-      expect(state.lastDownTime).to.be.gt(0)
 
       ping.stop()
       done()
@@ -155,9 +133,6 @@ describe('Monitor', function () {
     this.timeout(30000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test 1',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'puppeteer',
@@ -165,26 +140,17 @@ describe('Monitor', function () {
         httpOptions: {}
       },
       interval: 500
-    }, { active: true })
+    }, true)
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
       const res = response.data as puppeteer.Response
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
+      expect(isTicking).to.equal(true)
       expect(res.status()).to.oneOf([200, 304])
       // check state props
-      expect(monitor.id).to.equal(1)
-      expect(monitor.title).to.be.a('string')
-      expect(monitor.createdAt).to.be.gt(0)
-      expect(state.active).to.be.true
-      expect(state.isUp).to.be.true
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://duckduckgo.com')
       expect(monitor.interval).to.equal(500)
-      expect(state.totalRequests).to.equal(1)
-      expect(state.totalDownTimes).to.equal(0)
-      expect(state.lastRequest).to.be.gt(0)
-      expect(state.lastDownTime).to.be.a('null')
-
       ping.stop()
       done()
     })
@@ -209,9 +175,6 @@ describe('Monitor', function () {
     this.timeout(30000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test 1',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'puppeteer',
@@ -221,7 +184,7 @@ describe('Monitor', function () {
         }
       },
       interval: 500
-    }, { active: true })
+    }, true)
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
       ping.stop()
@@ -229,14 +192,9 @@ describe('Monitor', function () {
     })
 
     ping.on('timeout', (monitor: Monitor, response: MonitorResponse) => {
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
-      expect(state.active).to.be.true
-      expect(state.isUp).to.be.false
-      expect(state.totalRequests).to.equal(1)
-      expect(state.totalDownTimes).to.equal(1)
-      expect(state.lastRequest).to.be.gt(0)
-      expect(state.lastDownTime).to.exist
+      expect(isTicking).to.equal(true)
       ping.stop()
       done()
     })
@@ -256,9 +214,6 @@ describe('Monitor', function () {
     this.timeout(10000)
     
     let ping = new Monitor({
-      id: 3,
-      title: 'Test 3',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'got',
@@ -281,9 +236,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 4,
-      title: 'Test 3',
-      createdAt: 1,
       protocol: 'tcp',
       protocolOptions: {
         host: '127.0.0.1',
@@ -294,9 +246,9 @@ describe('Monitor', function () {
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
-      expect(state.totalRequests).to.equal(1)
+      expect(isTicking).to.equal(true)
       ping.stop()
       done()
     })
@@ -318,9 +270,6 @@ describe('Monitor', function () {
 
     try {
       let ping = new Monitor({
-        id: 1,
-        title: 'Test',
-        createdAt: 1,
         protocol: 'web',
         protocolOptions: {
           engine: 'got',
@@ -332,7 +281,9 @@ describe('Monitor', function () {
 
       ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
         const res = response.data
-        const state = monitor.getState()
+        const isTicking = monitor.isTicking
+
+        expect(isTicking).to.equal(true)
 
         expect(res.statusCode).to.equal(200)
         expect(res.requestUrl).to.equal('https://testing.com/test-redirect')
@@ -357,9 +308,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         url:'https://testing.com',
@@ -378,8 +326,9 @@ describe('Monitor', function () {
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
+      expect(isTicking).to.equal(true)
       expect(res.statusCode).to.equal(200)
       ping.stop()
       done()
@@ -402,9 +351,6 @@ describe('Monitor', function () {
     try {
 
       let ping = new Monitor({
-        id: 1,
-        title: 'Test',
-        createdAt: 1,
         protocol: 'web',
         protocolOptions: {
           url:'https://testing.com/timeout',
@@ -448,9 +394,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'got',
@@ -467,20 +410,12 @@ describe('Monitor', function () {
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
       
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
+
+      expect(isTicking).to.equal(true)
 
       // check state props
-      expect(monitor.id).to.exist
-      expect(monitor.title).to.be.a('string')
-      expect(monitor.createdAt).to.be.gt(0)
       expect(monitor.interval).to.equal(500)
-      expect(state.active).to.be.true
-      expect(state.isUp).to.be.true
-      expect(state.totalRequests).to.equal(1)
-      expect(state.totalDownTimes).to.equal(0)
-      expect(state.lastRequest).to.be.gt(0)
-      expect(state.lastDownTime).to.be.a('null')
-
       expect(res.statusCode).to.equal(200)
 
       ping.stop()
@@ -497,9 +432,6 @@ describe('Monitor', function () {
     this.timeout(10000)
 
     let ping = new Monitor({
-      id: 1,
-      title: 'Test',
-      createdAt: 1,
       protocol: 'web',
       protocolOptions: {
         engine: 'got',
@@ -520,18 +452,18 @@ describe('Monitor', function () {
 
     ping.on('down', function (monitor: Monitor, response: MonitorResponse) {
       const res = response.data
-      const state = monitor.getState()
+      const isTicking = monitor.isTicking
 
+      expect(isTicking).to.equal(true)
       expect(res.statusCode).to.equal(200)
-      expect(state.totalRequests).to.equal(1)
       ping.stop()
       done()
     })
   })
 
   after(function (done) {
-    tcpServer.close();
-    done();
-    process.exit();
+    tcpServer.close()
+    done()
+    process.exit()
   })
 })
