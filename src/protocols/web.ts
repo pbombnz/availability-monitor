@@ -57,17 +57,20 @@ export default class WebProtocolHandler implements MonitorHandler {
       }
 
     } catch (error) {
-      const metrics = await page.metrics()
-      let harObj
-      try {
-        harObj = await har.stop()
-      } catch (error) {}
+      if (error instanceof Error) {
+        const metrics = await page.metrics()
+        let harObj
+        try {
+          harObj = await har.stop()
+        } catch (error) {}
 
-      if (error instanceof puppeteer.errors.TimeoutError) {
-        throw new MonitorError(WebProtocolHandler.timeout(error, metrics.TaskDuration, harObj))
-      } else{
-        throw new MonitorError(WebProtocolHandler.error(error, metrics.TaskDuration, harObj))
+        if (error instanceof puppeteer.errors.TimeoutError) {
+          throw new MonitorError(WebProtocolHandler.timeout(error, metrics.TaskDuration, harObj))
+        } else{
+          throw new MonitorError(WebProtocolHandler.error(error, metrics.TaskDuration, harObj))
+        }
       }
+      return WebProtocolHandler.error('', 0, null)
     } finally {
       await browser.close()
     }
@@ -79,37 +82,39 @@ export default class WebProtocolHandler implements MonitorHandler {
     httpOptions.throwHttpErrors = false
     
     let res: GotResponse<string> | undefined
-    let duration: number
+    let duration: number = -1
 
     try {
       res = await got(url, httpOptions)
       duration = res.timings.phases.total as number
-    } catch(err) {
-      //console.error(err)
-      /*if(err instanceof CacheError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof ReadError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof ParseError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof UploadError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof HTTPError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof MaxRedirectsError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else if(err instanceof UnsupportedProtocolError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } else */if(err instanceof GotTimeoutError) {
-        throw new MonitorError(WebProtocolHandler.timeout(err))
-      }/* else if(err instanceof CancelError) {
-        throw new ProtocolHandlerError(WebProtocolHandler.error(err))
-      } */else {
-        throw new MonitorError(WebProtocolHandler.error(err))
+    } catch(error) {
+      if (error instanceof Error) {
+        //console.error(err)
+        /*if(err instanceof CacheError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof ReadError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof ParseError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof UploadError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof HTTPError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof MaxRedirectsError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else if(err instanceof UnsupportedProtocolError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } else */if(error instanceof GotTimeoutError) {
+          throw new MonitorError(WebProtocolHandler.timeout(error))
+        }/* else if(err instanceof CancelError) {
+          throw new ProtocolHandlerError(WebProtocolHandler.error(err))
+        } */else {
+          throw new MonitorError(WebProtocolHandler.error(error))
+        }
       }
     }
 
-    if (options.expect) {
+    if (options.expect && res) {
       // Check if actual status code matches the expected code.
       if (options.expect.statusCode && res.statusCode !== options.expect.statusCode) {
         throw new MonitorError(WebProtocolHandler.down(res, duration, 'Expected status code did not match the actual status code recieved.'))
