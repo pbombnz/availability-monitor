@@ -114,7 +114,7 @@ export default class WebProtocolHandler implements MonitorHandler {
       }
     }
 
-    if (options.expect && res) {
+    if (res && options.expect) {
       // Check if actual status code matches the expected code.
       if (options.expect.statusCode && res.statusCode !== options.expect.statusCode) {
         throw new MonitorError(WebProtocolHandler.down(res, duration, 'Expected status code did not match the actual status code recieved.'))
@@ -125,7 +125,7 @@ export default class WebProtocolHandler implements MonitorHandler {
         throw new MonitorError(WebProtocolHandler.down(res, duration, 'Expected content was not found in response body.'))
       }
       return WebProtocolHandler.up(res, duration)
-    } else if ((res.statusCode >= 200 && res.statusCode <= 299) || res.statusCode == 304) {
+    } else if (res && ((res.statusCode >= 200 && res.statusCode <= 299) || res.statusCode == 304)) {
       return WebProtocolHandler.up(res, duration)
     }
     else {
