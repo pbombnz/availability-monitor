@@ -6,7 +6,7 @@ import { expect } from 'chai'
 import nock from 'nock'
 import net from 'net'
 import TcpServer from './tcpServer'
-import Monitor, { WebProtocolOptions } from '../src/monitor'
+import { Monitor, WebProtocolOptions } from '../src/monitor'
 import { Response } from 'got/dist/source';
 import puppeteer from 'puppeteer'
 import { MonitorResponse } from '../src/protocols';
@@ -143,7 +143,7 @@ describe('Monitor', function () {
     }, true)
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
-      const res = response.data as puppeteer.Response
+      const res = response.data as puppeteer.HTTPResponse
       const isTicking = monitor.isTicking
 
       expect(isTicking).to.equal(true)

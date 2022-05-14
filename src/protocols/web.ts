@@ -30,7 +30,7 @@ export default class WebProtocolHandler implements MonitorHandler {
 
     try {
       const timeout: number | undefined = typeof options.httpOptions.timeout === 'object' ? undefined : options.httpOptions.timeout
-      const res: puppeteer.Response | null = await page.goto(options.url, { timeout })
+      const res: puppeteer.HTTPResponse | null = await page.goto(options.url, { timeout })
       const metrics: puppeteer.Metrics = await page.metrics()
       const bodyHTML = await page.content()
       
@@ -133,7 +133,7 @@ export default class WebProtocolHandler implements MonitorHandler {
     }
   }
 
-  static up(data: any, duration: number, traceroute?: any): MonitorResponse {
+  static up(data: any, duration: number = 0, traceroute?: any): MonitorResponse {
     return {
       isUp: true,
       duration: duration,
@@ -143,7 +143,7 @@ export default class WebProtocolHandler implements MonitorHandler {
     }
   }
 
-  static down(data: any, duration: number, reason: string, traceroute?: any): MonitorResponse {
+  static down(data: any, duration: number = 0, reason: string, traceroute?: any): MonitorResponse {
     return {
       isUp: false,
       duration: duration,

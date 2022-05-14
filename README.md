@@ -25,13 +25,16 @@ npm install availability-monitor
 
 
 ## Quick Usage
+
+### Javascript
+
 ```javascript
-const Monitor = require('availability-monitor')
+const Monitor = require('availability-monitor').default
 
 const bbcNewsMonitor = new Monitor({
     protocol: 'web',
     protocolOptions: {
-        url: 'https://bbcnews.com',
+        url: 'https://bbc.com/news',
         engine: 'got',
         httpOptions: {
             timeout: 30000 // 30 Seconds
@@ -43,6 +46,33 @@ const bbcNewsMonitor = new Monitor({
 bbcNewsMonitor.on('up', function(monitor, response) {
     // Do something with the response
     console.log(`${monitor.title} is up. Response Time: ${response.responseTime}ms`)
+})
+```
+
+### Typescript
+
+```typescript
+import am from "availability-monitor"
+
+const bbcNewsMonitor = new am.Monitor({
+    protocol: 'web',
+    protocolOptions: {
+        url: 'https://bbc.com/news',
+        engine: 'got',
+        httpOptions: {
+            timeout: 30000 // 30 Seconds
+        }
+    },
+    interval: 1
+})
+
+bbcNewsMonitor.on('up', function(monitor, response) {
+    // Do something with the response
+    console.log(`BBC News is up. Response Time: ${response.duration}ms`)
+})
+bbcNewsMonitor.on('error', function(monitor, response) {
+    // Do something on error
+    console.log(`Could not connect to BBC News. Error: ${response}`)
 })
 ```
 
