@@ -42,7 +42,7 @@ export type MonitorState = 'running' | 'waiting' | 'stopped'
 
 
 
-export default class Monitor extends EventEmitter {
+export class Monitor extends EventEmitter {
   // Options
   readonly protocol: SupportedProtocol
   readonly protocolOptions: SupportedProtocolOptions
