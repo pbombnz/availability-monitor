@@ -4,8 +4,8 @@ import got, { Response as GotResponse, TimeoutError as GotTimeoutError, RequestE
 import puppeteer from 'puppeteer'
 // @ts-expect-error
 import PuppeteerHar from 'puppeteer-har'
-import { MonitorHandler, MonitorError, MonitorResponse } from '.'
-import { WebProtocolOptions } from '../monitor'
+import { MonitorHandler, MonitorError, MonitorResponse } from './index.js'
+import { WebProtocolOptions } from '../monitor.js'
 import { Options } from 'got/dist/source'
 
 

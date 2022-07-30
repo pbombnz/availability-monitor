@@ -1,4 +1,4 @@
-import { SupportedProtocolOptions } from "../monitor"
+import { SupportedProtocolOptions } from "../monitor.js"
 
 export interface MonitorResponse {
     isUp: boolean

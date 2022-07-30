@@ -5,11 +5,11 @@
 import { expect } from 'chai'
 import nock from 'nock'
 import net from 'net'
-import TcpServer from './tcpServer'
-import { Monitor, WebProtocolOptions } from '../src/monitor'
+import TcpServer from './tcpServer.js'
+import { Monitor, WebProtocolOptions } from '../src/index.js'
 import { Response } from 'got/dist/source';
 import puppeteer from 'puppeteer'
-import { MonitorResponse } from '../src/protocols';
+import { MonitorResponse } from '../src/protocols/index.js';
 
 let tcpServer: net.Server
 
@@ -74,7 +74,7 @@ describe('Monitor', function () {
         url: 'https://testing.com/must-pass',
         httpOptions: {}
       },
-      interval: 500
+      interval: 60000
     })
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
@@ -85,7 +85,7 @@ describe('Monitor', function () {
       expect(res.statusCode).to.equal(200)
       // check state props
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://testing.com/must-pass')
-      expect(monitor.interval).to.equal(500)
+      expect(monitor.interval).to.equal(60000)
       ping.stop()
       done()
     })
@@ -106,7 +106,7 @@ describe('Monitor', function () {
         url:'https://testing.com/must-fail',
         httpOptions: {}
       },
-      interval: 500
+      interval: 60000
     })
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
@@ -122,7 +122,7 @@ describe('Monitor', function () {
       expect(res.statusCode).to.equal(500)
       // check state props
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://testing.com/must-fail')
-      expect(ping.interval).to.equal(500)
+      expect(ping.interval).to.equal(60000)
 
       ping.stop()
       done()
@@ -139,7 +139,7 @@ describe('Monitor', function () {
         url: 'https://duckduckgo.com',
         httpOptions: {}
       },
-      interval: 500
+      interval: 60000
     }, true)
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
@@ -150,7 +150,7 @@ describe('Monitor', function () {
       expect(res.status()).to.oneOf([200, 304])
       // check state props
       expect((ping.protocolOptions as WebProtocolOptions).url).to.be.equal('https://duckduckgo.com')
-      expect(monitor.interval).to.equal(500)
+      expect(monitor.interval).to.equal(60000)
       ping.stop()
       done()
     })
@@ -183,7 +183,7 @@ describe('Monitor', function () {
           timeout: 1
         }
       },
-      interval: 500
+      interval: 60000
     }, true)
 
     ping.on('up', (monitor: Monitor, response: MonitorResponse) => {
@@ -220,7 +220,7 @@ describe('Monitor', function () {
         url:'https://testing.com/must-pass',
         httpOptions: {}
       },
-      interval: 500
+      interval: 60000
     })
 
     ping.on('stop', () => {
@@ -241,7 +241,7 @@ describe('Monitor', function () {
         host: '127.0.0.1',
         port: 8124
       },
-      interval: 500
+      interval: 60000
     })
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
@@ -276,7 +276,7 @@ describe('Monitor', function () {
           url:'https://testing.com/test-redirect',
           httpOptions: {}
         },
-        interval: 500
+        interval: 60000
       })
 
       ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
@@ -321,7 +321,7 @@ describe('Monitor', function () {
           statusCode: 200
         }
       },
-      interval: 500,
+      interval: 60000,
     })
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
@@ -362,7 +362,7 @@ describe('Monitor', function () {
             statusCode: 200
           }
         },
-        interval: 500,
+        interval: 60000,
       })
 
       ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
@@ -404,7 +404,7 @@ describe('Monitor', function () {
           contentSearch: 'fox'
         }
       },
-      interval: 500,
+      interval: 60000,
     })
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {
@@ -415,7 +415,7 @@ describe('Monitor', function () {
       expect(isTicking).to.equal(true)
 
       // check state props
-      expect(monitor.interval).to.equal(500)
+      expect(monitor.interval).to.equal(60000)
       expect(res.statusCode).to.equal(200)
 
       ping.stop()
@@ -442,7 +442,7 @@ describe('Monitor', function () {
           contentSearch: '123'
         }
       },
-      interval: 500,
+      interval: 60000,
     })
 
     ping.on('up', function (monitor: Monitor, response: MonitorResponse) {

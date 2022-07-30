@@ -1,14 +1,16 @@
 {
   "name": "availability-monitor",
-  "version": "1.1.3",
+  "version": "1.1.4",
   "description": "A library to monitor the availablity and uptime of web services.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "source": "src/index.ts",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "scripts": {
+    "prestart": "npm install && npm run build",
     "prebuild": "rimraf ./dist",
     "build": "tsc",
-    "prestart2": "npm install && npm run build",
-    "prestart": "npm run build",
     "start": "node app.js",
     "test": "npx mocha dist/test"
   },
@@ -21,7 +23,8 @@
     "uptime",
     "ping",
     "network",
-    "server"
+    "server",
+    "typescript"
   ],
   "author": "PBombNZ",
   "license": "MIT",
@@ -36,10 +39,11 @@
     "@types/puppeteer": "^5.4.6",
     "chai": "^4.2.0",
     "eslint": "^8.9.0",
+    "microbundle": "^0.15.0",
     "mocha": "^9.2.0",
     "nock": "^12.0.3",
     "rimraf": "^3.0.2",
-    "typescript": "^4.0.2"
+    "typescript": "^4.7.4"
   },
   "dependencies": {
     "got": "^11.6.2",
