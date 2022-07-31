@@ -2,11 +2,11 @@
 
 import { EventEmitter } from 'events'
 
-import WebProtocolHander from './protocols/web'
-import TcpProtocolHander from './protocols/tcp'
+import WebProtocolHander from './protocols/web.js'
+import TcpProtocolHander from './protocols/tcp.js'
 
-import { Options } from 'got/dist/source'
-import { MonitorError, MonitorHandler, MonitorResponse } from './protocols'
+import { Options } from 'got/dist/source/index.js'
+import { MonitorError, MonitorHandler, MonitorResponse } from './protocols/index.js'
 
 export interface WebProtocolOptions {
   url: string
@@ -56,7 +56,7 @@ export class Monitor extends EventEmitter {
 
     this.protocol = opts.protocol
     this.protocolOptions = opts.protocolOptions
-    this.interval = opts.interval ?? 5
+    this.interval = opts.interval ?? 30000  // User-specified or 30 Seconds default
   
     this._intervalHandler = null
     this._intervalHandlerTicking = false
@@ -84,15 +84,12 @@ export class Monitor extends EventEmitter {
     }
     this._intervalHandlerTicking = true
 
-    const ONE_MINUTE = (60 * 1000)
-    const INTERVAL = (this.interval ?? 0) * ONE_MINUTE
-
     // Ping on start
     this.emit('start', this)
     this.ping()
 
     // create an interval for regular pings
-    this._intervalHandler = setInterval(() => { this.ping() }, INTERVAL)
+    this._intervalHandler = setInterval(() => { this.ping() }, this.interval)
   }
 
   public stop(): void {

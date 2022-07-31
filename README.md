@@ -26,10 +26,10 @@ npm install availability-monitor
 
 ## Quick Usage
 
-### Javascript
+### ES6 (ECMAScript 2015) or newer / Typescript
 
-```javascript
-const Monitor = require('availability-monitor').default
+```typescript
+import { Monitor } from "availability-monitor"
 
 const bbcNewsMonitor = new Monitor({
     protocol: 'web',
@@ -40,30 +40,7 @@ const bbcNewsMonitor = new Monitor({
             timeout: 30000 // 30 Seconds
         }
     },
-    interval: 5
-})
-
-bbcNewsMonitor.on('up', function(monitor, response) {
-    // Do something with the response
-    console.log(`${monitor.title} is up. Response Time: ${response.responseTime}ms`)
-})
-```
-
-### Typescript
-
-```typescript
-import am from "availability-monitor"
-
-const bbcNewsMonitor = new am.Monitor({
-    protocol: 'web',
-    protocolOptions: {
-        url: 'https://bbc.com/news',
-        engine: 'got',
-        httpOptions: {
-            timeout: 30000 // 30 Seconds
-        }
-    },
-    interval: 1
+    interval: 60000
 })
 
 bbcNewsMonitor.on('up', function(monitor, response) {
@@ -212,11 +189,11 @@ _Type:_ `SupportedProtocolOptions`
 #### interval
 _Type_: `number`
 
-_Default_: `5` representing 5 minutes.
+_Default_: `30000` representing 30 seconds.
 
 _Description:_
 
-Number of minutes to wait before polling the web service again.
+Number of microseconds to wait before polling the web service again.
 
 
 ## Emitted Events

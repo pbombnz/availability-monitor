@@ -1,9 +1,9 @@
 'use strict'
 
 import { Socket } from 'net'
-import * as utils from '../utils'
-import { MonitorError, MonitorResponse, MonitorHandler } from '.'
-import { TcpProtocolOptions } from '../monitor'
+import * as utils from '../utils.js'
+import { MonitorError, MonitorResponse, MonitorHandler } from './index.js'
+import { TcpProtocolOptions } from '../monitor.js'
 
 export default class TcpProtocolHandler implements MonitorHandler {
   async ping(options: TcpProtocolOptions): Promise<MonitorResponse> {
